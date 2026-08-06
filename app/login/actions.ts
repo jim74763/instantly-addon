@@ -17,15 +17,20 @@ const LOGIN_WINDOW_MS = 10 * 60 * 1000;
 const MAX_LOGIN_ATTEMPTS = 5;
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 
-function getRateLimitKey(username: string, headersList: Headers) {
+function getRateLimitKeys(username: string, headersList: Headers) {
+  const normalizedUsername = username.toLowerCase();
   const forwardedFor = headersList.get("x-forwarded-for")?.split(",")[0]?.trim();
   const ip =
-    forwardedFor ||
-    headersList.get("x-real-ip") ||
     headersList.get("cf-connecting-ip") ||
+    headersList.get("x-real-ip") ||
+    forwardedFor ||
     "unknown";
 
-  return `${ip}:${username.toLowerCase()}`;
+  return [
+    `ip:${ip}`,
+    `user:${normalizedUsername}`,
+    `combo:${ip}:${normalizedUsername}`,
+  ];
 }
 
 function checkLoginRateLimit(key: string) {
@@ -68,18 +73,18 @@ export async function login(
 
   const username = String(formData.get("username") ?? "");
   const password = String(formData.get("password") ?? "");
-  const rateLimitKey = getRateLimitKey(username, await headers());
+  const rateLimitKeys = getRateLimitKeys(username, await headers());
 
-  if (checkLoginRateLimit(rateLimitKey)) {
+  if (rateLimitKeys.some(checkLoginRateLimit)) {
     return { error: "Too many login attempts. Try again later." };
   }
 
   if (!verifyCredentials(username, password)) {
-    recordFailedLogin(rateLimitKey);
+    rateLimitKeys.forEach(recordFailedLogin);
     return { error: "Invalid username or password." };
   }
 
-  clearFailedLogins(rateLimitKey);
+  rateLimitKeys.forEach(clearFailedLogins);
 
   const session = await getSession();
   session.isLoggedIn = true;

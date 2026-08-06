@@ -88,7 +88,10 @@ export async function requireDashboardAuth() {
   const configError = getAuthConfigError();
 
   if (configError) {
-    return Response.json({ error: configError }, { status: 503 });
+    return Response.json(
+      { error: "Authentication is unavailable" },
+      { status: 503 },
+    );
   }
 
   const session = await getSession();
