@@ -1,0 +1,47 @@
+export const OLD_LEAD_COLUMNS = [
+  "id",
+  "timestamp_created",
+  "timestamp_updated",
+  "organization",
+  "campaign",
+  "status",
+  "email",
+  "personalization",
+  "website",
+  "last_name",
+  "first_name",
+  "company_name",
+  "job_title",
+  "phone",
+  "linkedin_url",
+  "location",
+  "company_domain",
+  "list_id",
+  "assigned_to",
+  "lt_interest_status",
+  "pl_value_lead",
+  "verification_status",
+  "email_open_count",
+  "email_reply_count",
+  "email_click_count",
+  "status_summary",
+  "status_summary_subseq",
+  "last_step_from",
+  "last_step_id",
+  "last_step_timestamp_executed",
+  "email_opened_step",
+  "email_opened_variant",
+  "email_replied_step",
+  "email_replied_variant",
+  "email_clicked_step",
+  "email_clicked_variant",
+  "subsequence_id",
+  "payload",
+  "data",
+] as const;
+
+export type OldLeadColumn = (typeof OLD_LEAD_COLUMNS)[number];
+
+export type OldLead = Record<OldLeadColumn, string | number | null>;
+
+export type OldLeadInput = Partial<Record<OldLeadColumn, unknown>>;

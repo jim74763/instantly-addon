@@ -1,0 +1,416 @@
+{
+  "id": "15fbd039-f679-4cc1-a082-b3d299402e18",
+  "prevId": "70d7ac2b-44fc-4ba8-8298-39721fe28ed5",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.inbox_placement_copies": {
+      "name": "inbox_placement_copies",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "subject": {
+          "name": "subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "timestamp_created": {
+          "name": "timestamp_created",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "timestamp_updated": {
+          "name": "timestamp_updated",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "inbox_placement_copies_order_idx": {
+          "name": "inbox_placement_copies_order_idx",
+          "columns": [
+            {
+              "expression": "sort_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "inbox_placement_copies_active_idx": {
+          "name": "inbox_placement_copies_active_idx",
+          "columns": [
+            {
+              "expression": "active",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.old_leads": {
+      "name": "old_leads",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "timestamp_created": {
+          "name": "timestamp_created",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timestamp_updated": {
+          "name": "timestamp_updated",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "organization": {
+          "name": "organization",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "campaign": {
+          "name": "campaign",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "personalization": {
+          "name": "personalization",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "website": {
+          "name": "website",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "first_name": {
+          "name": "first_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "job_title": {
+          "name": "job_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "linkedin_url": {
+          "name": "linkedin_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "company_domain": {
+          "name": "company_domain",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "list_id": {
+          "name": "list_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assigned_to": {
+          "name": "assigned_to",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lt_interest_status": {
+          "name": "lt_interest_status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pl_value_lead": {
+          "name": "pl_value_lead",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verification_status": {
+          "name": "verification_status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_open_count": {
+          "name": "email_open_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_reply_count": {
+          "name": "email_reply_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_click_count": {
+          "name": "email_click_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status_summary": {
+          "name": "status_summary",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status_summary_subseq": {
+          "name": "status_summary_subseq",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_step_from": {
+          "name": "last_step_from",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_step_id": {
+          "name": "last_step_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_step_timestamp_executed": {
+          "name": "last_step_timestamp_executed",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_opened_step": {
+          "name": "email_opened_step",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_opened_variant": {
+          "name": "email_opened_variant",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_replied_step": {
+          "name": "email_replied_step",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_replied_variant": {
+          "name": "email_replied_variant",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_clicked_step": {
+          "name": "email_clicked_step",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_clicked_variant": {
+          "name": "email_clicked_variant",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subsequence_id": {
+          "name": "subsequence_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data": {
+          "name": "data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "old_leads_email_idx": {
+          "name": "old_leads_email_idx",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "old_leads_company_idx": {
+          "name": "old_leads_company_idx",
+          "columns": [
+            {
+              "expression": "company_name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "old_leads_location_idx": {
+          "name": "old_leads_location_idx",
+          "columns": [
+            {
+              "expression": "location",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "old_leads_updated_idx": {
+          "name": "old_leads_updated_idx",
+          "columns": [
+            {
+              "expression": "timestamp_updated",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

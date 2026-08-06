@@ -1,0 +1,46 @@
+CREATE TABLE "old_leads" (
+	"id" text PRIMARY KEY NOT NULL,
+	"timestamp_created" timestamp,
+	"timestamp_updated" timestamp,
+	"organization" text,
+	"campaign" text,
+	"status" integer,
+	"email" text,
+	"personalization" text,
+	"website" text,
+	"last_name" text,
+	"first_name" text,
+	"company_name" text,
+	"job_title" text,
+	"phone" text,
+	"linkedin_url" text,
+	"location" text,
+	"company_domain" text,
+	"list_id" text,
+	"assigned_to" text,
+	"lt_interest_status" integer,
+	"pl_value_lead" text,
+	"verification_status" integer,
+	"email_open_count" integer,
+	"email_reply_count" integer,
+	"email_click_count" integer,
+	"status_summary" jsonb,
+	"status_summary_subseq" jsonb,
+	"last_step_from" text,
+	"last_step_id" text,
+	"last_step_timestamp_executed" text,
+	"email_opened_step" integer,
+	"email_opened_variant" integer,
+	"email_replied_step" integer,
+	"email_replied_variant" integer,
+	"email_clicked_step" integer,
+	"email_clicked_variant" integer,
+	"subsequence_id" text,
+	"payload" jsonb,
+	"data" jsonb
+);
+--> statement-breakpoint
+CREATE INDEX "old_leads_email_idx" ON "old_leads" USING btree ("email");--> statement-breakpoint
+CREATE INDEX "old_leads_company_idx" ON "old_leads" USING btree ("company_name");--> statement-breakpoint
+CREATE INDEX "old_leads_location_idx" ON "old_leads" USING btree ("location");--> statement-breakpoint
+CREATE INDEX "old_leads_updated_idx" ON "old_leads" USING btree ("timestamp_updated");
