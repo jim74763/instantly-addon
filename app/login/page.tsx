@@ -4,12 +4,17 @@ import { LoginForm } from "@/app/login/login-form";
 import {
   getAuthConfigError,
   getSession,
+  isDashboardAuthDisabled,
   isAuthenticated,
 } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
+  if (isDashboardAuthDisabled()) {
+    redirect("/");
+  }
+
   const configError = getAuthConfigError();
   const session = configError ? null : await getSession();
 

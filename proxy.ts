@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   getAuthConfigError,
   getSession,
+  isDashboardAuthDisabled,
   isAuthenticated,
 } from "@/lib/auth/session";
 
@@ -40,6 +41,11 @@ function isPublicPath(pathname: string) {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (isDashboardAuthDisabled()) {
+    return addSecurityHeaders(NextResponse.next());
+  }
+
   const session = getAuthConfigError() ? null : await getSession();
   const authenticated = session ? isAuthenticated(session) : false;
 

@@ -16,7 +16,18 @@ export function getAuthConfig() {
   };
 }
 
+export function isDashboardAuthDisabled() {
+  return (
+    process.env.DASHBOARD_AUTH_DISABLED === "true" &&
+    process.env.NODE_ENV !== "production"
+  );
+}
+
 export function getAuthConfigError() {
+  if (isDashboardAuthDisabled()) {
+    return null;
+  }
+
   const { username, password, secret } = getAuthConfig();
 
   if (!username || !password || !secret) {
@@ -69,6 +80,10 @@ function constantTimeEqual(left: string, right: string) {
 }
 
 export function verifyCredentials(username: string, password: string) {
+  if (isDashboardAuthDisabled()) {
+    return true;
+  }
+
   const config = getAuthConfig();
 
   return (
@@ -79,12 +94,20 @@ export function verifyCredentials(username: string, password: string) {
 }
 
 export function isAuthenticated(session: IronSession<DashboardSession>) {
+  if (isDashboardAuthDisabled()) {
+    return true;
+  }
+
   const { username } = getAuthConfig();
 
   return session.isLoggedIn === true && session.username === username;
 }
 
 export async function requireDashboardAuth() {
+  if (isDashboardAuthDisabled()) {
+    return null;
+  }
+
   const configError = getAuthConfigError();
 
   if (configError) {

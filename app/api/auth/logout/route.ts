@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { getSession } from "@/lib/auth/session";
+import { getSession, isDashboardAuthDisabled } from "@/lib/auth/session";
 
 function isSameOrigin(headersList: Headers) {
   const origin = headersList.get("origin");
@@ -25,6 +25,10 @@ function isSameOrigin(headersList: Headers) {
 export async function POST() {
   if (!isSameOrigin(await headers())) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  if (isDashboardAuthDisabled()) {
+    redirect("/");
   }
 
   const session = await getSession();

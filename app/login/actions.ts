@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import {
   getAuthConfigError,
   getSession,
+  isDashboardAuthDisabled,
   verifyCredentials,
 } from "@/lib/auth/session";
 
@@ -65,6 +66,10 @@ export async function login(
   _previousState: LoginState,
   formData: FormData,
 ): Promise<LoginState> {
+  if (isDashboardAuthDisabled()) {
+    redirect("/");
+  }
+
   const configError = getAuthConfigError();
 
   if (configError) {

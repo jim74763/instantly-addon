@@ -16,6 +16,17 @@ Optional:
 INSTANTLY_API_BASE_URL=https://api.instantly.ai/api/v2
 ```
 
+Dashboard auth is required unless explicitly disabled for local development:
+
+```bash
+DASHBOARD_USERNAME=admin
+DASHBOARD_PASSWORD=change-me
+AUTH_SECRET=at-least-32-characters
+DASHBOARD_AUTH_DISABLED=true
+```
+
+`DASHBOARD_AUTH_DISABLED=true` is ignored when `NODE_ENV=production` so the public deployment remains protected.
+
 ## Getting Started
 
 First, run the development server:
