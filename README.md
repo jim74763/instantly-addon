@@ -53,6 +53,9 @@ pnpm exec wrangler secret put AUTH_SECRET
 pnpm deploy
 ```
 
+Use `pnpm build` to produce `.open-next/worker.js` without deploying. The
+`pnpm deploy` command always runs that Cloudflare build before deployment.
+
 `AUTH_SECRET` must contain at least 32 characters. Do not add these values to
 `wrangler.jsonc`: Wrangler secrets keep them out of the repository and Worker
 JSON responses. The PostgreSQL connection must be reachable from Cloudflare
