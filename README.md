@@ -8,6 +8,7 @@ Create `.env.local`:
 
 ```bash
 INSTANTLY_API_KEY=your_instantly_v2_api_key
+DATABASE_URI=your_postgres_connection_string
 ```
 
 Optional:
@@ -36,6 +37,26 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Deploy to Cloudflare Workers
+
+The app is bundled for Workers with OpenNext and deployed by Wrangler. Authenticate
+Wrangler, add the production secrets, then deploy:
+
+```bash
+pnpm exec wrangler login
+pnpm exec wrangler secret put INSTANTLY_API_KEY
+pnpm exec wrangler secret put DATABASE_URI
+pnpm exec wrangler secret put DASHBOARD_USERNAME
+pnpm exec wrangler secret put DASHBOARD_PASSWORD
+pnpm exec wrangler secret put AUTH_SECRET
+pnpm deploy
+```
+
+`AUTH_SECRET` must contain at least 32 characters. Do not add these values to
+`wrangler.jsonc`: Wrangler secrets keep them out of the repository and Worker
+JSON responses. The PostgreSQL connection must be reachable from Cloudflare
+Workers; the application uses Neon's HTTP driver for this serverless runtime.
 
 Required Instantly API scopes depend on the controls you use:
 

@@ -1,7 +1,7 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 
-let pool: Pool | null = null;
+let database: ReturnType<typeof drizzle> | null = null;
 
 function getDatabaseUrl() {
   if (!process.env.DATABASE_URI) {
@@ -12,11 +12,9 @@ function getDatabaseUrl() {
 }
 
 export function getDb() {
-  if (!pool) {
-    pool = new Pool({
-      connectionString: getDatabaseUrl(),
-    });
+  if (!database) {
+    database = drizzle(neon(getDatabaseUrl()));
   }
 
-  return drizzle(pool);
+  return database;
 }
