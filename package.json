@@ -2,6 +2,7 @@
   "name": "unibox",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.11.1",
   "scripts": {
     "build": "opennextjs-cloudflare build",
     "build:next": "next build",
