@@ -6,9 +6,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Auth and public deployment
 
-This dashboard is deployed publicly and must remain private. Keep authentication and authorization in mind for every new page, server action, and API route.
+This dashboard relies on Cloudflare Access as its authentication layer. Do not
+add application-level login, session, or authorization checks unless the auth
+strategy is intentionally changed again.
 
-- Dashboard UI routes must stay protected by `proxy.ts`.
-- Private API routes must also call `requireDashboardAuth()` from `lib/auth/session.ts`; do not rely on proxy-only protection for APIs.
-- Do not expose secrets, credentials, provider API keys, or session data to Client Components or JSON responses.
-- Preserve the `iron-session` based single-user auth model unless the auth strategy is intentionally changed.
+- Keep the deployed Worker behind a Cloudflare Access policy.
+- Do not expose secrets, credentials, or provider API keys to Client Components
+  or JSON responses.

@@ -4,7 +4,6 @@ import {
   type InstantlyPatchEmailPayload,
   routeErrorResponse,
 } from "@/lib/instantly";
-import { requireDashboardAuth } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,9 +12,6 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const authResponse = await requireDashboardAuth();
-  if (authResponse) return authResponse;
-
   try {
     const { id } = await params;
     const email = await instantlyFetch<InstantlyEmail>(
@@ -32,9 +28,6 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const authResponse = await requireDashboardAuth();
-  if (authResponse) return authResponse;
-
   try {
     const { id } = await params;
     const payload = (await request.json()) as InstantlyPatchEmailPayload;

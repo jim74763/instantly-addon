@@ -1,4 +1,3 @@
-import { requireDashboardAuth } from "@/lib/auth/session";
 import { spamLists, type SpamListDefinition } from "@/lib/spam-lists";
 
 export const runtime = "nodejs";
@@ -272,9 +271,6 @@ async function mapWithConcurrency<T, Result>(
 }
 
 export async function POST(request: Request) {
-  const authResponse = await requireDashboardAuth();
-  if (authResponse) return authResponse;
-
   try {
     const payload = (await request.json().catch(() => null)) as {
       email?: unknown;

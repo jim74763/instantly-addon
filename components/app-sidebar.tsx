@@ -7,7 +7,6 @@ import {
   DatabaseIcon,
   InboxIcon,
   LayersIcon,
-  LogOutIcon,
   MailIcon,
   RadarIcon,
   UsersIcon,
@@ -16,7 +15,6 @@ import {
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -102,18 +100,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <form action="/api/auth/logout" method="post">
-              <SidebarMenuButton tooltip="Sign out">
-                <LogOutIcon />
-                <span>Sign out</span>
-              </SidebarMenuButton>
-            </form>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
     </Sidebar>
   );
 }

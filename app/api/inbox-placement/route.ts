@@ -4,7 +4,6 @@ import {
   routeErrorResponse,
 } from "@/lib/instantly";
 import { listInboxPlacementCopies } from "@/lib/inbox-placement";
-import { requireDashboardAuth } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -118,9 +117,6 @@ async function sendWithRateLimitRetry({
 }
 
 export async function GET() {
-  const authResponse = await requireDashboardAuth();
-  if (authResponse) return authResponse;
-
   try {
     const copies = await listInboxPlacementCopies();
     return Response.json({ copies });
@@ -130,9 +126,6 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const authResponse = await requireDashboardAuth();
-  if (authResponse) return authResponse;
-
   try {
     const body = (await request.json()) as SendInboxPlacementBody;
     const from = body.from?.trim();

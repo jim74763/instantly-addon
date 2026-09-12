@@ -4,7 +4,6 @@ import {
   type InstantlyPaginated,
   routeErrorResponse,
 } from "@/lib/instantly";
-import { requireDashboardAuth } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,9 +16,6 @@ type LeadListRequest = {
 };
 
 export async function POST(request: Request) {
-  const authResponse = await requireDashboardAuth();
-  if (authResponse) return authResponse;
-
   try {
     const body = (await request.json().catch(() => ({}))) as LeadListRequest;
     const campaign = body.campaign?.trim();

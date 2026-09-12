@@ -4,7 +4,6 @@ import {
   routeErrorResponse,
 } from "@/lib/instantly";
 import { upsertOldLead } from "@/lib/leads-db";
-import { requireDashboardAuth } from "@/lib/auth/session";
 import type { OldLeadInput } from "@/lib/leads-schema";
 
 export const runtime = "nodejs";
@@ -109,9 +108,6 @@ function toOldLeadInput(lead: InstantlyLead): OldLeadInput {
 }
 
 export async function POST(request: Request) {
-  const authResponse = await requireDashboardAuth();
-  if (authResponse) return authResponse;
-
   try {
     const body = (await request.json().catch(() => ({}))) as MoveRequest;
     const leads = body.leads?.filter((lead) => lead.id) ?? [];

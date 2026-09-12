@@ -4,7 +4,6 @@ import {
   type InstantlyReplyPayload,
   routeErrorResponse,
 } from "@/lib/instantly";
-import { requireDashboardAuth } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,9 +27,6 @@ function isReplyPayload(payload: unknown): payload is InstantlyReplyPayload {
 }
 
 export async function POST(request: Request) {
-  const authResponse = await requireDashboardAuth();
-  if (authResponse) return authResponse;
-
   try {
     const payload: unknown = await request.json();
 

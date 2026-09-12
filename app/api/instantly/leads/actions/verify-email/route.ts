@@ -1,5 +1,4 @@
 import { routeErrorResponse } from "@/lib/instantly";
-import { requireDashboardAuth } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,9 +26,6 @@ function getApifyActorId() {
 }
 
 export async function POST(request: Request) {
-  const authResponse = await requireDashboardAuth();
-  if (authResponse) return authResponse;
-
   try {
     const body = (await request.json().catch(() => ({}))) as VerifyRequest;
     const emails = Array.from(

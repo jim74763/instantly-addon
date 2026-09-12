@@ -3,15 +3,11 @@ import {
   upsertOldLead,
 } from "@/lib/leads-db";
 import { OLD_LEAD_COLUMNS, type OldLeadInput } from "@/lib/leads-schema";
-import { requireDashboardAuth } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  const authResponse = await requireDashboardAuth();
-  if (authResponse) return authResponse;
-
   const { searchParams } = new URL(request.url);
   const limit = Math.max(
     1,
@@ -35,9 +31,6 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const authResponse = await requireDashboardAuth();
-  if (authResponse) return authResponse;
-
   try {
     const body = (await request.json()) as OldLeadInput;
     const lead = await upsertOldLead(body);

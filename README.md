@@ -17,16 +17,9 @@ Optional:
 INSTANTLY_API_BASE_URL=https://api.instantly.ai/api/v2
 ```
 
-Dashboard auth is required unless explicitly disabled for local development:
-
-```bash
-DASHBOARD_USERNAME=admin
-DASHBOARD_PASSWORD=change-me
-AUTH_SECRET=at-least-32-characters
-DASHBOARD_AUTH_DISABLED=true
-```
-
-`DASHBOARD_AUTH_DISABLED=true` is ignored when `NODE_ENV=production` so the public deployment remains protected.
+The deployed application relies on Cloudflare Access for authentication. Keep
+the Worker behind an Access policy because the application does not implement a
+second authentication layer.
 
 ## Getting Started
 
@@ -47,19 +40,16 @@ Wrangler, add the production secrets, then deploy:
 pnpm exec wrangler login
 pnpm exec wrangler secret put INSTANTLY_API_KEY
 pnpm exec wrangler secret put DATABASE_URI
-pnpm exec wrangler secret put DASHBOARD_USERNAME
-pnpm exec wrangler secret put DASHBOARD_PASSWORD
-pnpm exec wrangler secret put AUTH_SECRET
 pnpm deploy
 ```
 
 Use `pnpm build` to produce `.open-next/worker.js` without deploying. The
 `pnpm deploy` command always runs that Cloudflare build before deployment.
 
-`AUTH_SECRET` must contain at least 32 characters. Do not add these values to
-`wrangler.jsonc`: Wrangler secrets keep them out of the repository and Worker
-JSON responses. The PostgreSQL connection must be reachable from Cloudflare
-Workers; the application uses Neon's HTTP driver for this serverless runtime.
+Do not add secret values to `wrangler.jsonc`: Wrangler secrets keep them out of
+the repository and Worker JSON responses. The PostgreSQL connection must be
+reachable from Cloudflare Workers; the application uses Neon's HTTP driver for
+this serverless runtime.
 
 Required Instantly API scopes depend on the controls you use:
 

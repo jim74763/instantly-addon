@@ -1,13 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
-
-import {
-  getAuthConfigError,
-  getSession,
-  isDashboardAuthDisabled,
-  isAuthenticated,
-} from "@/lib/auth/session";
-
-const PUBLIC_PATHS = ["/login", "/api/auth/logout"];
+import { NextResponse } from "next/server";
 
 function addSecurityHeaders(response: NextResponse) {
   response.headers.set("Cache-Control", "no-store");
@@ -33,44 +24,8 @@ function addSecurityHeaders(response: NextResponse) {
   return response;
 }
 
-function isPublicPath(pathname: string) {
-  return PUBLIC_PATHS.some(
-    (path) => pathname === path || pathname.startsWith(`${path}/`),
-  );
-}
-
-export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (isDashboardAuthDisabled()) {
-    return addSecurityHeaders(NextResponse.next());
-  }
-
-  const session = getAuthConfigError() ? null : await getSession();
-  const authenticated = session ? isAuthenticated(session) : false;
-
-  if (pathname === "/login" && authenticated) {
-    return addSecurityHeaders(NextResponse.redirect(new URL("/", request.url)));
-  }
-
-  if (isPublicPath(pathname)) {
-    return addSecurityHeaders(NextResponse.next());
-  }
-
-  if (authenticated) {
-    return addSecurityHeaders(NextResponse.next());
-  }
-
-  if (pathname.startsWith("/api/")) {
-    return addSecurityHeaders(
-      NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-    );
-  }
-
-  const loginUrl = new URL("/login", request.url);
-  loginUrl.searchParams.set("next", pathname);
-
-  return addSecurityHeaders(NextResponse.redirect(loginUrl));
+export function proxy() {
+  return addSecurityHeaders(NextResponse.next());
 }
 
 export const config = {
