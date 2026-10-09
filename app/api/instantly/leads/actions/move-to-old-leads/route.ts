@@ -5,14 +5,10 @@ import {
 } from "@/lib/instantly";
 import { upsertOldLead } from "@/lib/leads-db";
 import type { OldLeadInput } from "@/lib/leads-schema";
+import { moveLeadsSchema, parseOrThrow, readJson } from "@/lib/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-type MoveRequest = {
-  campaign?: string;
-  leads?: InstantlyLead[];
-};
 
 function toOldLeadInput(lead: InstantlyLead): OldLeadInput {
   const knownKeys = new Set([
@@ -109,34 +105,25 @@ function toOldLeadInput(lead: InstantlyLead): OldLeadInput {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json().catch(() => ({}))) as MoveRequest;
-    const leads = body.leads?.filter((lead) => lead.id) ?? [];
-
-    if (!body.campaign) {
-      return Response.json(
-        { error: "campaign is required", code: "missing_campaign" },
-        { status: 400 },
-      );
-    }
-
-    if (leads.length === 0) {
-      return Response.json(
-        { error: "Select at least one lead", code: "missing_leads" },
-        { status: 400 },
-      );
-    }
+    const body = parseOrThrow(moveLeadsSchema, await readJson(request));
+    const leadIds = Array.from(new Set(body.leadIds));
 
     const saved = [];
     const deleted = [];
 
-    for (const lead of leads) {
-      const savedLead = await upsertOldLead(toOldLeadInput(lead));
+    for (const leadId of leadIds) {
+      const encodedId = encodeURIComponent(leadId);
+      // Load the lead from Instantly instead of trusting browser-supplied data.
+      const lead = await instantlyFetch<InstantlyLead>(`/leads/${encodedId}`);
+      const savedLead = await upsertOldLead(
+        toOldLeadInput({ ...lead, campaign: lead.campaign ?? body.campaign }),
+      );
       saved.push(savedLead);
 
-      await instantlyFetch(`/leads/${lead.id}`, {
+      await instantlyFetch(`/leads/${encodedId}`, {
         method: "DELETE",
       });
-      deleted.push(lead.id);
+      deleted.push(leadId);
     }
 
     return Response.json({

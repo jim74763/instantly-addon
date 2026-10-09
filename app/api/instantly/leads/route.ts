@@ -4,38 +4,24 @@ import {
   type InstantlyPaginated,
   routeErrorResponse,
 } from "@/lib/instantly";
+import { leadListSchema, parseOrThrow, readJson } from "@/lib/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type LeadListRequest = {
-  campaign?: string;
-  filter?: string;
-  search?: string;
-  starting_after?: string;
-};
-
 export async function POST(request: Request) {
   try {
-    const body = (await request.json().catch(() => ({}))) as LeadListRequest;
-    const campaign = body.campaign?.trim();
-
-    if (!campaign) {
-      return Response.json(
-        { error: "campaign is required", code: "missing_campaign" },
-        { status: 400 },
-      );
-    }
+    const body = parseOrThrow(leadListSchema, await readJson(request));
 
     const data = await instantlyFetch<InstantlyPaginated<InstantlyLead>>(
       "/leads/list",
       {
         method: "POST",
         body: {
-          campaign,
+          campaign: body.campaign,
           limit: 50,
-          ...(body.filter?.trim() ? { filter: body.filter.trim() } : {}),
-          ...(body.search?.trim() ? { search: body.search.trim() } : {}),
+          ...(body.filter ? { filter: body.filter } : {}),
+          ...(body.search ? { search: body.search } : {}),
           ...(body.starting_after
             ? { starting_after: body.starting_after }
             : {}),

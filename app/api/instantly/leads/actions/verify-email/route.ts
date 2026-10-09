@@ -1,13 +1,10 @@
 import { routeErrorResponse } from "@/lib/instantly";
+import { parseOrThrow, readJson, verifyEmailsSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const DEFAULT_ACTOR_ID = "account56~email-verifier";
-
-type VerifyRequest = {
-  emails?: string[];
-};
 
 function getApifyToken() {
   const token = process.env.APIFY_API_TOKEN?.trim();
@@ -27,25 +24,12 @@ function getApifyActorId() {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json().catch(() => ({}))) as VerifyRequest;
-    const emails = Array.from(
-      new Set(
-        (body.emails ?? [])
-          .map((email) => email.trim().toLowerCase())
-          .filter(Boolean),
-      ),
-    );
-
-    if (emails.length === 0) {
-      return Response.json(
-        { error: "Select leads with email addresses", code: "missing_emails" },
-        { status: 400 },
-      );
-    }
+    const body = parseOrThrow(verifyEmailsSchema, await readJson(request));
+    const emails = Array.from(new Set(body.emails));
 
     const actorId = getApifyActorId();
     const response = await fetch(
-      `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items`,
+      `https://api.apify.com/v2/acts/${encodeURIComponent(actorId)}/run-sync-get-dataset-items`,
       {
         method: "POST",
         headers: {
@@ -60,6 +44,8 @@ export async function POST(request: Request) {
     const payload = await response.json().catch(() => null);
 
     if (!response.ok) {
+      console.error("Apify API error", response.status, payload);
+
       return Response.json(
         {
           error:
@@ -70,7 +56,6 @@ export async function POST(request: Request) {
               ? payload.error
               : `Apify returned ${response.status}`,
           code: "apify_api_error",
-          details: payload,
         },
         { status: response.status },
       );

@@ -193,6 +193,18 @@ function getPreview(email: InstantlyEmail) {
   );
 }
 
+function safeHttpsUrl(value?: string | null) {
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    return new URL(value).protocol === "https:" ? value : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function stripHtml(value: string) {
   return value
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -992,9 +1004,9 @@ export default function InstantlyUnibox() {
                                 {email.attachment_json.files.map((file, index) => (
                                   <a
                                     key={`${file.filename}-${index}`}
-                                    href={file.url ?? undefined}
+                                    href={safeHttpsUrl(file.url)}
                                     target="_blank"
-                                    rel="noreferrer"
+                                    rel="noopener noreferrer"
                                     className="rounded-md border px-2 py-1 text-xs font-medium hover:bg-muted"
                                   >
                                     {file.filename || "Attachment"}

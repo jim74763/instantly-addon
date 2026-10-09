@@ -4,7 +4,20 @@ function addSecurityHeaders(response: NextResponse) {
   response.headers.set("Cache-Control", "no-store");
   response.headers.set(
     "Content-Security-Policy",
-    "base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'",
+    [
+      "default-src 'self'",
+      // Next.js injects inline bootstrap scripts; a nonce-based policy would
+      // force every page to render dynamically.
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"}`,
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:",
+      "font-src 'self' data:",
+      "connect-src 'self'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "object-src 'none'",
+    ].join("; "),
   );
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");

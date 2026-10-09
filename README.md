@@ -11,15 +11,18 @@ INSTANTLY_API_KEY=your_instantly_v2_api_key
 DATABASE_URI=your_postgres_connection_string
 ```
 
-Optional:
+Optional (see `.env.example` for the full list):
 
 ```bash
 INSTANTLY_API_BASE_URL=https://api.instantly.ai/api/v2
+APIFY_API_TOKEN=your_apify_token
+ABUSIX_DNSBL_KEY=your_abusix_key
 ```
 
 The deployed application relies on Cloudflare Access for authentication. Keep
 the Worker behind an Access policy because the application does not implement a
-second authentication layer.
+second authentication layer. Access protects hostnames, so also cover (or
+disable) the `*.workers.dev` and preview URLs.
 
 ## Getting Started
 
@@ -40,6 +43,7 @@ Wrangler, add the production secrets, then deploy:
 pnpm exec wrangler login
 pnpm exec wrangler secret put INSTANTLY_API_KEY
 pnpm exec wrangler secret put DATABASE_URI
+pnpm exec wrangler secret put APIFY_API_TOKEN
 pnpm deploy
 ```
 

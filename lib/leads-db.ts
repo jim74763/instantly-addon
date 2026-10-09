@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { asc, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { oldLeads } from "@/lib/db/schema";
+import { ValidationError } from "@/lib/validation";
 import {
   OLD_LEAD_COLUMNS,
   type OldLead,
@@ -40,7 +41,11 @@ function normalizeJsonColumn(value: unknown) {
   }
 
   if (typeof value === "string") {
-    return JSON.parse(value);
+    try {
+      return JSON.parse(value);
+    } catch {
+      throw new ValidationError("Invalid JSON in a JSON column");
+    }
   }
 
   return value;
@@ -59,7 +64,7 @@ function normalizeValue(column: OldLeadColumn, value: unknown) {
     const numberValue = Number(value);
 
     if (!Number.isFinite(numberValue)) {
-      throw new Error(`${column} must be a number`);
+      throw new ValidationError(`${column} must be a number`);
     }
 
     return numberValue;
@@ -132,7 +137,7 @@ export async function listOldLeads({
     direction.toLowerCase() === "asc"
       ? asc(getSortableColumn(safeSort))
       : desc(getSortableColumn(safeSort));
-  const searchValue = search.trim();
+  const searchValue = search.trim().replace(/[\\%_]/g, "\\$&");
   const safeLimit = Math.max(1, Math.min(limit, 500));
   const safeOffset = Math.max(0, offset);
 

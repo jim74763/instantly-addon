@@ -4,16 +4,14 @@ import {
   routeErrorResponse,
 } from "@/lib/instantly";
 import { listInboxPlacementCopies } from "@/lib/inbox-placement";
+import {
+  inboxPlacementSchema,
+  parseOrThrow,
+  readJson,
+} from "@/lib/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-type SendInboxPlacementBody = {
-  from?: string;
-  recipients?: string[];
-  footerId?: string;
-  messageId?: string;
-};
 
 type TestEmailResponse =
   | {
@@ -127,26 +125,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as SendInboxPlacementBody;
-    const from = body.from?.trim();
-    const recipients = Array.from(
-      new Set(
-        (body.recipients ?? [])
-          .map(normalizeEmail)
-          .filter((email) => email.includes("@")),
-      ),
-    );
-
-    if (!from) {
-      return Response.json({ error: "A sending account is required." }, { status: 400 });
-    }
-
-    if (!recipients.length) {
-      return Response.json(
-        { error: "At least one recipient email is required." },
-        { status: 400 },
-      );
-    }
+    const body = parseOrThrow(inboxPlacementSchema, await readJson(request));
+    const from = body.from;
+    const recipients = Array.from(new Set(body.recipients.map(normalizeEmail)));
 
     const copies = await listInboxPlacementCopies();
 

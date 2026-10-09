@@ -1,4 +1,5 @@
 import { spamLists, type SpamListDefinition } from "@/lib/spam-lists";
+import { spamCheckSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -272,10 +273,10 @@ async function mapWithConcurrency<T, Result>(
 
 export async function POST(request: Request) {
   try {
-    const payload = (await request.json().catch(() => null)) as {
-      email?: unknown;
-    } | null;
-    const email = typeof payload?.email === "string" ? payload.email : "";
+    const payload = spamCheckSchema.safeParse(
+      await request.json().catch(() => null),
+    );
+    const email = payload.success ? payload.data.email : "";
     const domain = domainFromEmail(email);
 
     if (!domain || !isValidDomain(domain)) {
@@ -316,9 +317,11 @@ export async function POST(request: Request) {
       results,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unable to check spam lists";
+    console.error("Spam list check failed", error);
 
-    return Response.json({ error: message }, { status: 500 });
+    return Response.json(
+      { error: "Unable to check spam lists" },
+      { status: 500 },
+    );
   }
 }

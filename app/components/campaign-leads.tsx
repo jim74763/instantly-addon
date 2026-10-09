@@ -632,7 +632,7 @@ export default function CampaignLeads() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           campaign: selectedCampaignId,
-          leads: leadsToMove,
+          leadIds: leadsToMove.map((lead) => lead.id),
         }),
       });
       const deleted = new Set(result.deletedIds);
