@@ -1,3 +1,5 @@
+import { ValidationError } from "@/lib/validation";
+
 export type InstantlyEmailBody = {
   text?: string | null;
   html?: string | null;
@@ -249,6 +251,13 @@ export async function instantlyFetch<T>(
 }
 
 export function routeErrorResponse(error: unknown) {
+  if (error instanceof ValidationError) {
+    return Response.json(
+      { error: error.message, code: "invalid_request" },
+      { status: 400 },
+    );
+  }
+
   if (error instanceof InstantlyConfigError) {
     return Response.json(
       {
@@ -260,23 +269,23 @@ export function routeErrorResponse(error: unknown) {
   }
 
   if (error instanceof InstantlyApiError) {
+    console.error("Instantly API error", error.status, error.details);
+
     return Response.json(
       {
         error: error.message,
         code: "instantly_api_error",
         upstreamStatus: error.status,
-        details: error.details,
       },
       { status: error.status },
     );
   }
 
-  const message =
-    error instanceof Error ? error.message : "Unexpected local API error";
+  console.error("Unexpected local API error", error);
 
   return Response.json(
     {
-      error: message,
+      error: "Unexpected local API error",
       code: "local_api_error",
     },
     { status: 500 },

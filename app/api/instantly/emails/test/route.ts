@@ -1,17 +1,8 @@
 import { instantlyFetch, routeErrorResponse } from "@/lib/instantly";
+import { parseOrThrow, readJson, testEmailSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-type TestEmailBody = {
-  eaccount?: string;
-  to_address_email_list?: string;
-  subject?: string;
-  body?: {
-    text?: string;
-    html?: string;
-  };
-};
 
 type TestEmailResponse =
   | {
@@ -23,28 +14,17 @@ type TestEmailResponse =
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as TestEmailBody;
-
-    if (
-      !body.eaccount?.trim() ||
-      !body.to_address_email_list?.trim() ||
-      !body.subject?.trim() ||
-      (!body.body?.text?.trim() && !body.body?.html?.trim())
-    ) {
-      return Response.json(
-        { error: "From account, recipients, subject, and body are required." },
-        { status: 400 },
-      );
-    }
+    const body = parseOrThrow(testEmailSchema, await readJson(request));
+    const text = body.body.text?.trim();
 
     const result = await instantlyFetch<TestEmailResponse>("/emails/test", {
       method: "POST",
       body: {
-        eaccount: body.eaccount.trim(),
-        to_address_email_list: body.to_address_email_list.trim(),
-        subject: body.subject.trim(),
+        eaccount: body.eaccount,
+        to_address_email_list: body.to_address_email_list,
+        subject: body.subject,
         body: {
-          ...(body.body.text?.trim() ? { text: body.body.text.trim() } : {}),
+          ...(text ? { text } : {}),
           html: (body.body.html ?? body.body.text ?? "").trim(),
         },
       },
