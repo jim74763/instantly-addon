@@ -1,76 +1,67 @@
-Local Instantly Unibox client built with Next.js App Router.
+# Unibox
 
-The app talks to the official Instantly API v2 from server-side route handlers, so the API key never ships to the browser bundle.
+A self-hosted companion to Instantly for handling cold-email replies, managing leads, and testing delivery from one dashboard.
 
-## Environment
+Unibox is for people who don't want to upgrade their Instantly plan just to reply to emails in Unibox, or keep signing into separate email accounts to respond. It uses Instantly's official API to bring conversations and replies into one inbox, with extra tools for lead cleanup, email verification, and placement testing.
 
-Create `.env.local`:
+This project was fully coded by AI. It works and has been tested.
 
-```bash
-INSTANTLY_API_KEY=your_instantly_v2_api_key
-DATABASE_URI=your_postgres_connection_string
-```
+## What you can do
 
-Optional (see `.env.example` for the full list):
+- **Reply from one inbox.** Read conversations across your connected Instantly accounts and send replies through the API. Handle responses in one place without opening each mailbox separately or paying extra just for Instantly's built-in Unibox, provided your workspace has the required API access.
+- **Archive leads and free up contact slots.** Select campaign leads and move them to your own PostgreSQL database. The app automatically saves each selected lead before removing it from Instantly, preserving its contact details, campaign information, engagement counts, and custom data. Keep old leads without using up your Instantly uploaded-contact allowance; you choose when to archive them.
+- **Keep your own lead database.** The Old Leads DB lets you view, add, and update stored leads independently of Instantly. Your archive stays available after those leads have been removed from the platform.
+- **Verify leads and clean up bad addresses.** Run email verification on selected campaign leads through Apify. After verification, use the archive actions to move bad addresses, or bad and risky addresses together, into PostgreSQL and remove them from Instantly. This gives you a separate verification and cleanup workflow without spending Instantly verification credits.
+- **Send placement tests for MailReach.** Choose an Instantly sending account, paste your test recipient addresses from [MailReach](https://mailreach.co), and send a separate plain-text message to each address. Add an optional footer ID to identify the test. The app spaces out sends to respect Instantly's test-email rate limit; check placement results in your testing service.
+- **Check sending accounts and send test emails.** See account connection status, warmup information, and sending limits together. Send a custom test email from a chosen account to check delivery or troubleshoot a mailbox before using it in a campaign.
 
-```bash
-INSTANTLY_API_BASE_URL=https://api.instantly.ai/api/v2
-APIFY_API_TOKEN=your_apify_token
-```
+## Requirements and costs
 
-The deployed application relies on Cloudflare Access for authentication. Keep
-the Worker behind an Access policy because the application does not implement a
-second authentication layer. Access protects hostnames, so also cover (or
-disable) the `*.workers.dev` and preview URLs.
+You need an Instantly API key with access to the endpoints used by the app.
 
-## Getting Started
+Hosting and PostgreSQL may have their own costs. Email verification requires an Apify account and is billed through Apify; placement testing services are separate too.
 
-First, run the development server:
+## Local setup
+
+Use Node.js and npm/pnpm, an Instantly API v2 key, and a Neon PostgreSQL database.
 
 ```bash
-npm run dev
+pnpm install
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Set `INSTANTLY_API_KEY` and `DATABASE_URI` in `.env`. Email verification also requires `APIFY_API_TOKEN`; other optional settings are listed in [.env.example](.env.example).
 
-## Deploy to Cloudflare Workers
+Apply the database migrations and start the app:
 
-The app is bundled for Workers with OpenNext and deployed by Wrangler. Authenticate
-Wrangler, add the production secrets, then deploy:
+```bash
+pnpm db:migrate
+pnpm dev
+```
+
+Open [localhost:3000](http://localhost:3000).
+
+## Deployment
+
+The app uses OpenNext to run on Cloudflare Workers. Update the Worker name in `wrangler.jsonc`, then authenticate and set your production secrets:
 
 ```bash
 pnpm exec wrangler login
 pnpm exec wrangler secret put INSTANTLY_API_KEY
 pnpm exec wrangler secret put DATABASE_URI
+# Required if you use email verification:
 pnpm exec wrangler secret put APIFY_API_TOKEN
 pnpm deploy
 ```
 
-Use `pnpm build` to produce `.open-next/worker.js` without deploying. The
-`pnpm deploy` command always runs that Cloudflare build before deployment.
+Keep the deployed Worker behind **Cloudflare Access**, including any enabled `workers.dev` and preview URLs. Cloudflare Access provides authentication; the app has no application-level login.
 
-Do not add secret values to `wrangler.jsonc`: Wrangler secrets keep them out of
-the repository and Worker JSON responses. The PostgreSQL connection must be
-reachable from Cloudflare Workers; the application uses Neon's HTTP driver for
-this serverless runtime.
+API keys and database credentials stay server-side. Keep secret values out of the repository and `wrangler.jsonc`.
 
-Required Instantly API scopes depend on the controls you use:
+## Development
 
-- `emails:read` for listing and opening Unibox emails
-- `emails:create` for replying
-- `emails:update` for marking messages read or unread
-- `accounts:read` for account filters
-- `campaigns:read` for campaign filters
-
-The email list endpoint is rate-limited by Instantly to 20 requests per minute, so the app uses manual refresh and cursor paging instead of polling.
-
-## Local API routes
-
-- `GET /api/instantly/emails`
-- `GET /api/instantly/emails/:id`
-- `PATCH /api/instantly/emails/:id`
-- `POST /api/instantly/emails/reply`
-- `POST /api/instantly/emails/threads/:threadId/mark-as-read`
-- `POST /api/instantly/meta`
-
-All routes proxy to `https://api.instantly.ai/api/v2` using `Authorization: Bearer $INSTANTLY_API_KEY`.
+```bash
+pnpm lint     # Run ESLint
+pnpm build    # Build for Cloudflare Workers
+pnpm preview  # Build and preview locally in the Workers runtime
+```
