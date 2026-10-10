@@ -42,10 +42,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
-  Loader2Icon,
   RefreshCwIcon,
   SendIcon,
-  ShieldCheckIcon,
 } from "lucide-react";
 import type { InstantlyAccount, InstantlyPaginated } from "@/lib/instantly";
 
@@ -65,44 +63,6 @@ type AccountFilters = {
 type TestEmailResult = {
   status?: "success";
   error?: string;
-};
-
-type SpamListResultStatus = "clear" | "listed" | "error" | "not_configured";
-
-type SpamListMatch = {
-  target: string;
-  query: string;
-  addresses: string[];
-  text: string[];
-};
-
-type SpamListResult = {
-  name: string;
-  zone: string | null;
-  status: SpamListResultStatus;
-  targetType: "ip" | "domain" | "mixed";
-  checkedTargets: string[];
-  matches: SpamListMatch[];
-  error?: string;
-};
-
-type SpamListCheckResult = {
-  email: string;
-  domain: string;
-  checkedAt: string;
-  targets: {
-    domainTargets: string[];
-    ipTargets: string[];
-    mxHosts: string[];
-  };
-  summary: {
-    total: number;
-    listed: number;
-    clear: number;
-    errors: number;
-    notConfigured: number;
-  };
-  results: SpamListResult[];
 };
 
 type AccountTag = {
@@ -450,26 +410,6 @@ function normalizeRecipients(value: string) {
     .join(",");
 }
 
-function spamStatusVariant(status: SpamListResultStatus) {
-  if (status === "listed") {
-    return "destructive" as const;
-  }
-
-  if (status === "clear") {
-    return "secondary" as const;
-  }
-
-  return "outline" as const;
-}
-
-function formatSpamStatus(status: SpamListResultStatus) {
-  if (status === "not_configured") {
-    return "Not configured";
-  }
-
-  return formatFieldLabel(status);
-}
-
 export default function Accounts() {
   const [accounts, setAccounts] = useState<InstantlyAccount[]>([]);
   const [filters, setFilters] = useState<AccountFilters>(initialFilters);
@@ -478,8 +418,6 @@ export default function Accounts() {
   const [hasRestoredPreferences, setHasRestoredPreferences] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  const [checkingSpamEmail, setCheckingSpamEmail] = useState("");
-  const [spamCheck, setSpamCheck] = useState<SpamListCheckResult | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [selectedAccount, setSelectedAccount] =
@@ -756,43 +694,6 @@ export default function Accounts() {
     }
   }
 
-  async function checkSpamLists(email: string) {
-    setCheckingSpamEmail(email);
-    setError("");
-    setNotice("");
-
-    try {
-      const result = await localFetch<SpamListCheckResult>(
-        "/api/spam-list-check",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        },
-      );
-
-      setSpamCheck(result);
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Unable to check spam lists",
-      );
-    } finally {
-      setCheckingSpamEmail("");
-    }
-  }
-
-  const visibleSpamListResults = spamCheck
-    ? [
-        ...spamCheck.results.filter((result) => result.status === "listed"),
-        ...spamCheck.results.filter((result) => result.status === "error"),
-        ...spamCheck.results.filter(
-          (result) => result.status === "not_configured",
-        ),
-      ]
-    : [];
-
   return (
     <DashboardShell>
       <SiteHeader
@@ -1053,7 +954,6 @@ export default function Accounts() {
                       "Daily limit",
                       "Last used",
                       "Tags",
-                      "Spam lists",
                       "Extra fields",
                     ].map((heading) => (
                       <TableHead
@@ -1132,28 +1032,6 @@ export default function Accounts() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            disabled={checkingSpamEmail === account.email}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              void checkSpamLists(account.email);
-                            }}
-                          >
-                            {checkingSpamEmail === account.email ? (
-                              <Loader2Icon
-                                data-icon="inline-start"
-                                className="animate-spin"
-                              />
-                            ) : (
-                              <ShieldCheckIcon data-icon="inline-start" />
-                            )}
-                            Check
-                          </Button>
-                        </TableCell>
-                        <TableCell>
                           {extraFields.length ? (
                             <div className="flex max-w-96 flex-wrap gap-1">
                               {extraFields.slice(0, 5).map(([key, value]) => (
@@ -1179,7 +1057,7 @@ export default function Accounts() {
                   {!isLoading && filteredAccounts.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={10}
+                        colSpan={9}
                         className="h-24 text-center text-muted-foreground"
                       >
                         No accounts match the current filters.
@@ -1192,132 +1070,6 @@ export default function Accounts() {
           </section>
 
           <div className="flex flex-col gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Spam list checker</CardTitle>
-                <CardDescription>
-                  Checks the selected mailbox domain, MX hosts, and resolved
-                  mail IPs against the configured DNSBL set.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {spamCheck ? (
-                  <div className="flex flex-col gap-4">
-                    <div className="space-y-1">
-                      <div className="font-medium break-words">
-                        {spamCheck.email}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatDate(spamCheck.checkedAt)}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <Badge
-                        variant={
-                          spamCheck.summary.listed ? "destructive" : "secondary"
-                        }
-                        className="h-auto justify-start py-1"
-                      >
-                        Listed: {spamCheck.summary.listed}
-                      </Badge>
-                      <Badge
-                        variant="secondary"
-                        className="h-auto justify-start py-1"
-                      >
-                        Clear: {spamCheck.summary.clear}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="h-auto justify-start py-1"
-                      >
-                        Errors: {spamCheck.summary.errors}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="h-auto justify-start py-1"
-                      >
-                        Setup: {spamCheck.summary.notConfigured}
-                      </Badge>
-                    </div>
-
-                    <div className="space-y-2 text-xs">
-                      <div>
-                        <span className="font-medium">Domain targets: </span>
-                        <span className="text-muted-foreground break-words">
-                          {spamCheck.targets.domainTargets.join(", ") || "n/a"}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="font-medium">IP targets: </span>
-                        <span className="text-muted-foreground break-words">
-                          {spamCheck.targets.ipTargets.join(", ") || "n/a"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {visibleSpamListResults.length ? (
-                      <ScrollArea className="max-h-96 rounded-lg border">
-                        <div className="divide-y">
-                          {visibleSpamListResults.map((result) => (
-                            <div key={result.name} className="space-y-2 p-3">
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="min-w-0 font-medium">
-                                  {result.name}
-                                </div>
-                                <Badge
-                                  variant={spamStatusVariant(result.status)}
-                                >
-                                  {formatSpamStatus(result.status)}
-                                </Badge>
-                              </div>
-                              {result.zone ? (
-                                <div className="text-xs text-muted-foreground break-words">
-                                  {result.zone}
-                                </div>
-                              ) : null}
-                              {result.matches.map((match) => (
-                                <div
-                                  key={match.query}
-                                  className="rounded-md bg-muted p-2 text-xs"
-                                >
-                                  <div className="font-medium break-words">
-                                    {match.target}
-                                  </div>
-                                  <div className="text-muted-foreground break-words">
-                                    {match.query}
-                                  </div>
-                                  <div>{match.addresses.join(", ")}</div>
-                                  {match.text.length ? (
-                                    <div className="text-muted-foreground break-words">
-                                      {match.text.join(" ")}
-                                    </div>
-                                  ) : null}
-                                </div>
-                              ))}
-                              {result.error ? (
-                                <div className="text-xs text-muted-foreground break-words">
-                                  {result.error}
-                                </div>
-                              ) : null}
-                            </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    ) : (
-                      <div className="rounded-lg border p-3 text-sm text-muted-foreground">
-                        No listings or lookup errors found.
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="rounded-lg border p-3 text-sm text-muted-foreground">
-                    Click Check on a mailbox row to run the spam list check.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
             <Card>
               <CardHeader>
                 <CardTitle>Send test email</CardTitle>

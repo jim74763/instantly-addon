@@ -16,7 +16,6 @@ Optional (see `.env.example` for the full list):
 ```bash
 INSTANTLY_API_BASE_URL=https://api.instantly.ai/api/v2
 APIFY_API_TOKEN=your_apify_token
-ABUSIX_DNSBL_KEY=your_abusix_key
 ```
 
 The deployed application relies on Cloudflare Access for authentication. Keep

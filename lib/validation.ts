@@ -107,10 +107,6 @@ export const inboxPlacementSchema = z.object({
   messageId: z.string().trim().max(200).optional(),
 });
 
-export const spamCheckSchema = z.object({
-  email: z.string().trim().max(320),
-});
-
 const NUMERIC_COLUMNS = new Set<string>([
   "status",
   "lt_interest_status",
